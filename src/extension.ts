@@ -91,8 +91,10 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
     view.webview.onDidReceiveMessage(onMessage);
   };
 
-  registerAndConnectView("exampleViewA");
-  registerAndConnectView("exampleViewB");
+  // registerAndConnectView("exampleViewA");
+  registerAndConnectView("exampleViewC");
+
+  await vscode.commands.executeCommand("workbench.view.explorer");
 };
 
 export const deactivate = () => {

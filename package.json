@@ -33,12 +33,16 @@
     "@types/vscode": "^1.83.1",
     "@vscode/vsce": "^2.21.1",
     "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^7.1.2",
+    "postcss-loader": "^8.1.1",
+    "postcss-preset-env": "^10.0.3",
     "prettier": "^3.0.3",
     "prettier-plugin-organize-imports": "^3.2.3",
     "promise-deferred": "^2.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-refresh": "^0.14.0",
+    "style-loader": "^4.0.0",
     "swc-loader": "^0.2.3",
     "typescript": "^5.2.2",
     "uuid": "^9.0.1",
@@ -47,33 +51,16 @@
     "webpack-dev-server": "^4.15.1"
   },
   "activationEvents": [
-    "onView:exampleViewA",
-    "onView:exampleViewB"
+    "onView:exampleViewC"
   ],
   "contributes": {
     "commands": [],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "exampleActivityBarContainer",
-          "title": "example",
-          "icon": "static/jersey.svg"
-        }
-      ],
-      "panel": [
-        {
-          "id": "examplePanelContainer",
-          "title": "example",
-          "icon": "static/jersey.svg"
-        }
-      ]
-    },
     "views": {
-      "exampleActivityBarContainer": [
+      "explorer": [
         {
-          "id": "exampleViewA",
+          "id": "exampleViewC",
           "type": "webview",
-          "name": "View A"
+          "name": "KAI IDE extension 2.0 - View C"
         }
       ],
       "examplePanelContainer": [
@@ -84,5 +71,10 @@
         }
       ]
     }
+  },
+  "dependencies": {
+    "@patternfly/patternfly": "^5.4.0",
+    "@patternfly/react-core": "^5.4.0",
+    "react-hook-form": "^7.53.0"
   }
 }

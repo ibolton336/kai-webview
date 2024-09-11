@@ -37,6 +37,31 @@ module.exports = (env, { mode }) => {
           },
           exclude: /node_modules/u,
         },
+        {
+          test: /\.css$/,
+          use: [
+            "style-loader",
+            {
+              loader: "css-loader",
+              options: { importLoaders: 1 }, // Ensures CSS imports are handled properly
+            },
+            {
+              loader: "postcss-loader",
+              options: {
+                postcssOptions: {
+                  plugins: [
+                    require("postcss-preset-env")({
+                      stage: 3,
+                      features: {
+                        "nesting-rules": true,
+                      },
+                    }),
+                  ],
+                },
+              },
+            },
+          ],
+        },
       ],
     },
     devServer: {
