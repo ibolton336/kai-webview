@@ -1,3 +1,4 @@
+import "@patternfly/patternfly/patternfly.css";
 import { createRoot } from "react-dom/client";
 import { WebviewApi, WithWebviewContext } from "./WebviewContext";
 import { ExampleViewA } from "./ExampleViewA";
