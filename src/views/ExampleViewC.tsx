@@ -43,7 +43,6 @@ export const ExampleViewC = () => {
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      {/* Radio Buttons for Flags */}
       <FormGroup label="Select a flag" fieldId="flag-selection">
         <Radio
           {...register("flag")}

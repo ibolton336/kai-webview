@@ -62,13 +62,6 @@
           "type": "webview",
           "name": "KAI IDE extension 2.0 - View C"
         }
-      ],
-      "examplePanelContainer": [
-        {
-          "id": "exampleViewB",
-          "type": "webview",
-          "name": "View B"
-        }
       ]
     }
   },
