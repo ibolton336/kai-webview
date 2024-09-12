@@ -9,7 +9,7 @@ import {
   ViewApiResponse,
   ViewEvents,
 } from "./viewApi";
-import fs from "node:fs/promises";
+import { runAnalysis } from "./runAnalysis";
 
 export const activate = async (ctx: vscode.ExtensionContext) => {
   const connectedViews: Partial<Record<ViewKey, vscode.WebviewView>> = {};
@@ -45,30 +45,6 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
 
       // Optionally, you can return this data if needed elsewhere
       return analysisData;
-    },
-
-    getFileContents: async () => {
-      const uris = await vscode.window.showOpenDialog({
-        canSelectFiles: true,
-        canSelectFolders: false,
-        canSelectMany: false,
-        openLabel: "Select file",
-        title: "Select file to read",
-      });
-
-      if (!uris?.length) {
-        return "";
-      }
-
-      const contents = await fs.readFile(uris[0].fsPath, "utf-8");
-      return contents;
-    },
-    showExampleViewB: () => {
-      connectedViews?.exampleViewB?.show?.(true);
-      vscode.commands.executeCommand(`exampleViewB.focus`);
-    },
-    sendMessageToExampleB: (msg: string) => {
-      triggerEvent("exampleBMessage", msg);
     },
     sendAnalysisFormData: async (data) => {
       console.log("data", data);
@@ -142,8 +118,12 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
   };
 
   // registerAndConnectView("exampleViewA");
-  registerAndConnectView("exampleViewC");
-
+  registerAndConnectView("App");
+  ctx.subscriptions.push(
+    vscode.commands.registerCommand("kai-webview.runAnalysis", () =>
+      runAnalysis(ctx)
+    )
+  );
   await vscode.commands.executeCommand("workbench.view.explorer");
 };
 

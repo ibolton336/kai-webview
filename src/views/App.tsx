@@ -1,11 +1,5 @@
 import { useForm } from "react-hook-form";
-import {
-  Form,
-  FormGroup,
-  Button,
-  TextInput,
-  Checkbox,
-} from "@patternfly/react-core";
+import { Form, FormGroup, Button, Checkbox } from "@patternfly/react-core";
 import { useContext, useEffect, useState } from "react";
 import { SimpleSelectCheckbox } from "../components/SimpleSelectCheckbox"; // Import your component
 import { WebviewContext } from "./WebviewContext";
@@ -23,7 +17,7 @@ interface FormData {
   analyzeLibraries: boolean;
 }
 
-export const ExampleViewC = () => {
+export const App = () => {
   const { callApi } = useContext(WebviewContext);
   const { register, handleSubmit } = useForm<FormData>();
 

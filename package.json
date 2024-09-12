@@ -51,7 +51,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "activationEvents": [
-    "onView:exampleViewC"
+    "onView:App"
   ],
   "contributes": {
     "configuration": {
@@ -71,13 +71,20 @@
         }
       }
     },
-    "commands": [],
+    "commands": [
+      {
+        "command": "kai-webview.runAnalysis",
+        "category": "KAI IDE extension 2.0",
+        "title": "Run Analysis"
+      }
+    ],
     "views": {
       "explorer": [
         {
-          "id": "exampleViewC",
+          "id": "App",
           "type": "webview",
-          "name": "KAI IDE extension 2.0 - View C"
+          "name": "KAI IDE extension 2.0 - View C",
+          "category": "KAI IDE extension 2.0"
         }
       ]
     }
