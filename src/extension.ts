@@ -73,6 +73,15 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
     sendAnalysisFormData: async (data) => {
       console.log("data", data);
       console.log("triggerEvent or pass data to another function");
+      if (
+        !vscode.workspace.workspaceFolders ||
+        vscode.workspace.workspaceFolders.length === 0
+      ) {
+        vscode.window.showErrorMessage(
+          "No workspace is open. Please open a workspace to save settings."
+        );
+        return;
+      }
       const config = vscode.workspace.getConfiguration("kai-webview");
 
       await config.update(

@@ -9,6 +9,8 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { SimpleSelectCheckbox } from "../components/SimpleSelectCheckbox"; // Import your component
 import { WebviewContext } from "./WebviewContext";
+import { targetOptions } from "../config/targets";
+import { sourceOptions } from "../config/sources";
 
 // Define the form structure
 interface FormData {
@@ -33,7 +35,6 @@ export const ExampleViewC = () => {
         setSelectedTargets(settings.targets || []);
         setSelectedSources(settings.sources || []);
         setSourceOnly(settings.sourceOnly || false);
-        setOverwrite(settings.overwrite || false);
         setAnalyzeLibraries(settings.analyzeLibraries || false);
       }
     };
@@ -43,7 +44,6 @@ export const ExampleViewC = () => {
   const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [sourceOnly, setSourceOnly] = useState<boolean>(false); // State for Source Only checkbox
-  const [overwrite, setOverwrite] = useState<boolean>(false); // State for Overwrite checkbox
   const [analyzeLibraries, setAnalyzeLibraries] = useState<boolean>(false); // State for Analyze Known Libraries checkbox
 
   // Handle form submission
@@ -52,35 +52,13 @@ export const ExampleViewC = () => {
     data.targets = selectedTargets; // Assign selected targets to form data
     data.sources = selectedSources; // Assign selected sources to form data
     data.sourceOnly = sourceOnly; // Assign state of Source Only checkbox
-    data.overwrite = overwrite; // Assign state of Overwrite checkbox
     data.analyzeLibraries = analyzeLibraries; // Assign state of Analyze Known Libraries checkbox
     console.log("Form data: ", data);
     callApi("sendAnalysisFormData", data);
   };
 
-  const targetOptions = [
-    { value: "Target 1", label: "Target 1", children: "Target 1" },
-    { value: "Target 2", label: "Target 2", children: "Target 2" },
-    { value: "Target 3", label: "Target 3", children: "Target 3" },
-  ];
-
-  const sourceOptions = [
-    { value: "Source 1", label: "Source 1", children: "Source 1" },
-    { value: "Source 2", label: "Source 2", children: "Source 2" },
-    { value: "Source 3", label: "Source 3", children: "Source 3" },
-  ];
-
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      {/* Input Directory */}
-      <FormGroup label="Input Directory" fieldId="input-directory">
-        <TextInput
-          {...register("inputDirectory")}
-          id="input-directory"
-          type="text"
-        />
-      </FormGroup>
-
       {/* Target List (Multi-select Checkbox) */}
       <FormGroup label="Select Targets" fieldId="target-selection">
         <SimpleSelectCheckbox
@@ -108,25 +86,6 @@ export const ExampleViewC = () => {
           id="source-only"
           isChecked={sourceOnly} // Controlled checkbox
           onChange={(_, checked) => setSourceOnly(checked)} // Update state on change
-        />
-      </FormGroup>
-
-      {/* Overwrite Toggle */}
-      <FormGroup fieldId="overwrite-toggle">
-        <Checkbox
-          label="Overwrite"
-          id="overwrite"
-          isChecked={overwrite} // Controlled checkbox
-          onChange={(_, checked) => setOverwrite(checked)} // Update state on change
-        />
-      </FormGroup>
-
-      {/* Output Directory */}
-      <FormGroup label="Output Directory" fieldId="output-directory">
-        <TextInput
-          {...register("outputDirectory")}
-          id="output-directory"
-          type="text"
         />
       </FormGroup>
 

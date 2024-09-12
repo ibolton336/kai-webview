@@ -36,12 +36,15 @@ export const SimpleSelectCheckbox: React.FC<ISimpleSelectBasicProps> = ({
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [selectOptions, setSelectOptions] = React.useState<SelectOptionProps[]>(
-    [{ value: "show-all", label: "Show All", children: "Show All" }, ...options]
+    [
+      { value: "select-all", label: "Select All", children: "Select All" },
+      ...options,
+    ]
   );
 
   React.useEffect(() => {
     const updatedOptions = [
-      { value: "show-all", label: "Show All", children: "Show All" },
+      { value: "select-all", label: "Select All", children: "Select All" },
       ...options,
     ];
     setSelectOptions(updatedOptions);
@@ -59,7 +62,7 @@ export const SimpleSelectCheckbox: React.FC<ISimpleSelectBasicProps> = ({
       return;
     }
     let newValue: string[] = [];
-    if (selectionValue === "show-all") {
+    if (selectionValue === "select-all") {
       newValue =
         value.length === options.length ? [] : options.map((opt) => opt.value);
     } else {
@@ -106,7 +109,7 @@ export const SimpleSelectCheckbox: React.FC<ISimpleSelectBasicProps> = ({
               onSelect(e, option.value);
             }}
             isSelected={
-              option.value === "show-all"
+              option.value === "select-all"
                 ? value?.length === options.length
                 : value?.includes(option.value as string)
             }
