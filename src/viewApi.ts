@@ -1,3 +1,5 @@
+import { AnalysisFormData } from "./views/ExampleViewC";
+
 export type ViewApiRequest<K extends keyof ViewApi = keyof ViewApi> = {
   type: "request";
   id: string;
@@ -29,9 +31,11 @@ export type ViewApi = {
   showExampleViewC?: () => void;
   sendMessageToExampleB: (msg: string) => void;
   sendMessageToExampleC?: (msg: string) => void;
+  sendAnalysisFormData: (data: AnalysisFormData) => void;
 };
 
 export type ViewEvents = {
   exampleBMessage: (a: string) => void;
   exampleCMessage?: (a: string) => void;
+  analysisFormData: (data: AnalysisFormData) => void;
 };

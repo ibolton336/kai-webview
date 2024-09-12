@@ -6,8 +6,9 @@ import {
   TextInput,
   Checkbox,
 } from "@patternfly/react-core";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { SimpleSelectCheckbox } from "../components/SimpleSelectCheckbox"; // Import your component
+import { WebviewContext } from "./WebviewContext";
 
 // Define the form structure
 interface FormData {
@@ -21,6 +22,7 @@ interface FormData {
 }
 
 export const ExampleViewC = () => {
+  const { callApi } = useContext(WebviewContext);
   const { register, handleSubmit } = useForm<FormData>();
 
   const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
@@ -30,13 +32,15 @@ export const ExampleViewC = () => {
   const [analyzeLibraries, setAnalyzeLibraries] = useState<boolean>(false); // State for Analyze Known Libraries checkbox
 
   // Handle form submission
-  const onSubmit = (data: FormData) => {
+
+  const onSubmit = (data: AnalysisFormData) => {
     data.targets = selectedTargets; // Assign selected targets to form data
     data.sources = selectedSources; // Assign selected sources to form data
     data.sourceOnly = sourceOnly; // Assign state of Source Only checkbox
     data.overwrite = overwrite; // Assign state of Overwrite checkbox
     data.analyzeLibraries = analyzeLibraries; // Assign state of Analyze Known Libraries checkbox
     console.log("Form data: ", data);
+    callApi("sendAnalysisFormData", data);
   };
 
   const targetOptions = [
@@ -126,3 +130,11 @@ export const ExampleViewC = () => {
     </Form>
   );
 };
+
+export interface AnalysisFormData extends FormData {
+  targets: string[];
+  sources: string[];
+  sourceOnly: boolean;
+  overwrite: boolean;
+  analyzeLibraries: boolean;
+}

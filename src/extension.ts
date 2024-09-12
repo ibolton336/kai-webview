@@ -51,6 +51,18 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
     sendMessageToExampleB: (msg: string) => {
       triggerEvent("exampleBMessage", msg);
     },
+    sendAnalysisFormData: async (data) => {
+      console.log("data", data);
+      console.log("triggerEvent or pass data to another function");
+      const config = vscode.workspace.getConfiguration();
+      await config.update(
+        "analysisFormData",
+        data,
+        vscode.ConfigurationTarget.Workspace
+      );
+
+      // triggerEvent("analysisFormData", data);
+    },
   };
 
   const isViewApiRequest = <K extends keyof ViewApi>(
