@@ -1,4 +1,4 @@
-import { AnalysisFormData } from "./views/App";
+import { AnalysisFormData } from "./views/ConfigurationForm";
 
 export type ViewApiRequest<K extends keyof ViewApi = keyof ViewApi> = {
   type: "request";
@@ -27,6 +27,7 @@ export type ViewApiEvent<K extends keyof ViewEvents = keyof ViewEvents> = {
 
 export type ViewApi = {
   retrieveAndCheckSettings: () => Promise<unknown>;
+  runAnalysis: () => Promise<unknown>;
   showApp?: () => void;
   sendMessageToApp: (msg: string) => void;
   sendAnalysisFormData: (data: AnalysisFormData) => void;

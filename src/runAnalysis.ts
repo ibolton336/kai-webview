@@ -17,6 +17,13 @@ export async function runAnalysis(
     // Step 2: Build the arguments for the kantra binary
     const args: string[] = ["analyze"];
 
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+
+    if (workspaceFolders && workspaceFolders.length > 0) {
+      // Return the first workspace folder's path
+      args.push("--input", workspaceFolders[0].uri.fsPath);
+    }
+
     if (analysisFormData.targets) {
       args.push("--target", analysisFormData.targets.join(","));
     }
@@ -33,7 +40,13 @@ export async function runAnalysis(
       args.push("--analyze-known-libraries");
     }
 
-    args.push("--output", context.storageUri); // not sure if these needs a toString
+    // Use fsPath to get the correct path as a string
+    const outputPath = context.storageUri?.fsPath;
+    if (!outputPath) {
+      throw new Error("Unable to resolve storage path");
+    }
+
+    args.push("--output", outputPath);
     args.push("--overwrite");
 
     // Step 3: Get the path to the kantra binary using context.asAbsolutePath

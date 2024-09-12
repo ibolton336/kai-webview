@@ -14,20 +14,23 @@ import { runAnalysis } from "./runAnalysis";
 export const activate = async (ctx: vscode.ExtensionContext) => {
   const connectedViews: Partial<Record<ViewKey, vscode.WebviewView>> = {};
 
-  const triggerEvent = <E extends keyof ViewEvents>(
-    key: E,
-    ...params: Parameters<ViewEvents[E]>
-  ) => {
-    Object.values(connectedViews).forEach((view) => {
-      view.webview.postMessage({
-        type: "event",
-        key,
-        value: params,
-      } as ViewApiEvent<E>);
-    });
-  };
+  // const triggerEvent = <E extends keyof ViewEvents>(
+  //   key: E,
+  //   ...params: Parameters<ViewEvents[E]>
+  // ) => {
+  //   Object.values(connectedViews).forEach((view) => {
+  //     view.webview.postMessage({
+  //       type: "event",
+  //       key,
+  //       value: params,
+  //     } as ViewApiEvent<E>);
+  //   });
+  // };
 
   const api: ViewApi = {
+    runAnalysis: async () => {
+      await runAnalysis(ctx);
+    },
     retrieveAndCheckSettings: async () => {
       // Access your extension's settings
       const config = vscode.workspace.getConfiguration("kai-webview");
