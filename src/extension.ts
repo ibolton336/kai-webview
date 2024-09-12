@@ -28,6 +28,25 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
   };
 
   const api: ViewApi = {
+    retrieveAndCheckSettings: async () => {
+      // Access your extension's settings
+      const config = vscode.workspace.getConfiguration("yourExtension");
+
+      // Retrieve the data from the workspace settings
+      const analysisData = config.get("analysisFormData");
+      console.log("Retrieved analysis data:", analysisData);
+
+      // Check if the data exists
+      if (analysisData !== undefined) {
+        console.log("Retrieved analysis data:", analysisData);
+      } else {
+        console.log("Analysis data not found.");
+      }
+
+      // Optionally, you can return this data if needed elsewhere
+      return analysisData;
+    },
+
     getFileContents: async () => {
       const uris = await vscode.window.showOpenDialog({
         canSelectFiles: true,

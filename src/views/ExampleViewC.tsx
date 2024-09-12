@@ -6,7 +6,7 @@ import {
   TextInput,
   Checkbox,
 } from "@patternfly/react-core";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { SimpleSelectCheckbox } from "../components/SimpleSelectCheckbox"; // Import your component
 import { WebviewContext } from "./WebviewContext";
 
@@ -24,6 +24,21 @@ interface FormData {
 export const ExampleViewC = () => {
   const { callApi } = useContext(WebviewContext);
   const { register, handleSubmit } = useForm<FormData>();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const settings = await callApi("retrieveAndCheckSettings");
+      console.log("settings", settings);
+      if (settings) {
+        setSelectedTargets(settings.targets || []);
+        setSelectedSources(settings.sources || []);
+        setSourceOnly(settings.sourceOnly || false);
+        setOverwrite(settings.overwrite || false);
+        setAnalyzeLibraries(settings.analyzeLibraries || false);
+      }
+    };
+    fetchSettings();
+  }, [callApi]);
 
   const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);

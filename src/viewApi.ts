@@ -26,6 +26,7 @@ export type ViewApiEvent<K extends keyof ViewEvents = keyof ViewEvents> = {
 };
 
 export type ViewApi = {
+  retrieveAndCheckSettings: () => Promise<unknown>;
   getFileContents: () => Promise<string>;
   showExampleViewB: () => void;
   showExampleViewC?: () => void;
