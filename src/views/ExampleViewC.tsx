@@ -1,87 +1,123 @@
 import { useForm } from "react-hook-form";
-import { Form, FormGroup, Radio, Button } from "@patternfly/react-core";
+import {
+  Form,
+  FormGroup,
+  Button,
+  TextInput,
+  Checkbox,
+} from "@patternfly/react-core";
 import { useState } from "react";
-import { SimpleSelectBasic } from "../components/SimpleSelectBasic";
+import { SimpleSelectCheckbox } from "../components/SimpleSelectCheckbox"; // Import your component
 
 // Define the form structure
 interface FormData {
-  flag: string;
-  target: string;
-  options: string[];
+  inputDirectory: string;
+  outputDirectory: string;
+  targets: string[];
+  sources: string[];
+  sourceOnly: boolean;
+  overwrite: boolean;
+  analyzeLibraries: boolean;
 }
 
 export const ExampleViewC = () => {
   const { register, handleSubmit } = useForm<FormData>();
 
-  const [isSelectOpen, setIsSelectOpen] = useState(false);
-  const [selectedTarget, setSelectedTarget] = useState<string>("Empty");
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
+  const [selectedSources, setSelectedSources] = useState<string[]>([]);
+  const [sourceOnly, setSourceOnly] = useState<boolean>(false); // State for Source Only checkbox
+  const [overwrite, setOverwrite] = useState<boolean>(false); // State for Overwrite checkbox
+  const [analyzeLibraries, setAnalyzeLibraries] = useState<boolean>(false); // State for Analyze Known Libraries checkbox
 
   // Handle form submission
   const onSubmit = (data: FormData) => {
+    data.targets = selectedTargets; // Assign selected targets to form data
+    data.sources = selectedSources; // Assign selected sources to form data
+    data.sourceOnly = sourceOnly; // Assign state of Source Only checkbox
+    data.overwrite = overwrite; // Assign state of Overwrite checkbox
+    data.analyzeLibraries = analyzeLibraries; // Assign state of Analyze Known Libraries checkbox
     console.log("Form data: ", data);
   };
 
-  const handleTargetSelect = (event: any, selection: string) => {
-    setSelectedTarget(selection);
-    setIsSelectOpen(false);
-  };
+  const targetOptions = [
+    { value: "Target 1", label: "Target 1", children: "Target 1" },
+    { value: "Target 2", label: "Target 2", children: "Target 2" },
+    { value: "Target 3", label: "Target 3", children: "Target 3" },
+  ];
 
-  const handleOptionsSelect = (event: any, selection: string) => {
-    if (selectedOptions.includes(selection)) {
-      setSelectedOptions((prev) => prev.filter((item) => item !== selection));
-    } else {
-      setSelectedOptions((prev) => [...prev, selection]);
-    }
-  };
-
-  const targetLabels = [
-    { name: "Target 1" },
-    { name: "Target 2" },
-    { name: "Target 3" },
+  const sourceOptions = [
+    { value: "Source 1", label: "Source 1", children: "Source 1" },
+    { value: "Source 2", label: "Source 2", children: "Source 2" },
+    { value: "Source 3", label: "Source 3", children: "Source 3" },
   ];
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      <FormGroup label="Select a flag" fieldId="flag-selection">
-        <Radio
-          {...register("flag")}
-          id="flag1"
-          name="flag"
-          label="Flag 1"
-          value="flag1"
-        />
-        <Radio
-          {...register("flag")}
-          id="flag2"
-          name="flag"
-          label="Flag 2"
-          value="flag2"
-        />
-        <Radio
-          {...register("flag")}
-          id="flag3"
-          name="flag"
-          label="Flag 3"
-          value="flag3"
+      {/* Input Directory */}
+      <FormGroup label="Input Directory" fieldId="input-directory">
+        <TextInput
+          {...register("inputDirectory")}
+          id="input-directory"
+          type="text"
         />
       </FormGroup>
 
-      {/* Multi-Select for Additional Options */}
-      <FormGroup label="Select a target" fieldId="target-selection">
-        <SimpleSelectBasic
-          selectId={`target-label-menu`}
-          toggleId={`target-toggle`}
-          toggleAriaLabel="Select label dropdown target"
-          aria-label="Select Label"
-          value={selectedTarget}
-          options={targetLabels.map((label) => ({
-            children: label.name,
-            value: label.name,
-          }))}
-          onChange={(option) => {
-            handleTargetSelect(null, option);
-          }}
+      {/* Target List (Multi-select Checkbox) */}
+      <FormGroup label="Select Targets" fieldId="target-selection">
+        <SimpleSelectCheckbox
+          options={targetOptions}
+          value={selectedTargets}
+          onChange={setSelectedTargets} // Pass state setter function for multi-select
+          placeholderText="Select Targets"
+        />
+      </FormGroup>
+
+      {/* Source List (Multi-select Checkbox) */}
+      <FormGroup label="Select Sources" fieldId="source-selection">
+        <SimpleSelectCheckbox
+          options={sourceOptions}
+          value={selectedSources}
+          onChange={setSelectedSources} // Pass state setter function for multi-select
+          placeholderText="Select Sources"
+        />
+      </FormGroup>
+
+      {/* Source Only Toggle */}
+      <FormGroup fieldId="source-only-toggle">
+        <Checkbox
+          label="Source Only"
+          id="source-only"
+          isChecked={sourceOnly} // Controlled checkbox
+          onChange={(_, checked) => setSourceOnly(checked)} // Update state on change
+        />
+      </FormGroup>
+
+      {/* Overwrite Toggle */}
+      <FormGroup fieldId="overwrite-toggle">
+        <Checkbox
+          label="Overwrite"
+          id="overwrite"
+          isChecked={overwrite} // Controlled checkbox
+          onChange={(_, checked) => setOverwrite(checked)} // Update state on change
+        />
+      </FormGroup>
+
+      {/* Output Directory */}
+      <FormGroup label="Output Directory" fieldId="output-directory">
+        <TextInput
+          {...register("outputDirectory")}
+          id="output-directory"
+          type="text"
+        />
+      </FormGroup>
+
+      {/* Analyze Known Libraries Toggle */}
+      <FormGroup fieldId="analyze-libraries-toggle">
+        <Checkbox
+          label="Analyze Known Libraries"
+          id="analyze-libraries"
+          isChecked={analyzeLibraries} // Controlled checkbox
+          onChange={(_, checked) => setAnalyzeLibraries(checked)} // Update state on change
         />
       </FormGroup>
 
