@@ -54,6 +54,23 @@
     "onView:exampleViewC"
   ],
   "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Analysis Configuration",
+      "properties": {
+        "kai-webview.analysisFormData": {
+          "type": "object",
+          "title": "Analysis Configuration",
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable analysis"
+            }
+          }
+        }
+      }
+    },
     "commands": [],
     "views": {
       "explorer": [

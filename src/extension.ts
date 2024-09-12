@@ -30,7 +30,7 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
   const api: ViewApi = {
     retrieveAndCheckSettings: async () => {
       // Access your extension's settings
-      const config = vscode.workspace.getConfiguration("yourExtension");
+      const config = vscode.workspace.getConfiguration("kai-webview");
 
       // Retrieve the data from the workspace settings
       const analysisData = config.get("analysisFormData");
@@ -73,13 +73,23 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
     sendAnalysisFormData: async (data) => {
       console.log("data", data);
       console.log("triggerEvent or pass data to another function");
-      const config = vscode.workspace.getConfiguration();
+      const config = vscode.workspace.getConfiguration("kai-webview");
+
       await config.update(
         "analysisFormData",
         data,
         vscode.ConfigurationTarget.Workspace
       );
+      const updatedData = config.get("analysisFormData");
+      console.log("Updated analysis data:", updatedData);
 
+      if (updatedData === data) {
+        console.log("Data successfully written to the workspace.");
+      } else {
+        console.log("Data write to workspace failed or was inconsistent.");
+      }
+
+      //if we need to update other webviews with the new data
       // triggerEvent("analysisFormData", data);
     },
   };
