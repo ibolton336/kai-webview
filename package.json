@@ -51,23 +51,40 @@
     "webpack-dev-server": "^4.15.1"
   },
   "activationEvents": [
-    "onView:exampleViewC"
+    "onView:App"
   ],
   "contributes": {
-    "commands": [],
+    "configuration": {
+      "type": "object",
+      "title": "Analysis Configuration",
+      "properties": {
+        "kai-webview.analysisFormData": {
+          "type": "object",
+          "title": "Analysis Configuration",
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable analysis"
+            }
+          }
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "kai-webview.runAnalysis",
+        "category": "KAI IDE extension 2.0",
+        "title": "Run Analysis"
+      }
+    ],
     "views": {
       "explorer": [
         {
-          "id": "exampleViewC",
+          "id": "App",
           "type": "webview",
-          "name": "KAI IDE extension 2.0 - View C"
-        }
-      ],
-      "examplePanelContainer": [
-        {
-          "id": "exampleViewB",
-          "type": "webview",
-          "name": "View B"
+          "name": "KAI IDE extension 2.0 - View C",
+          "category": "KAI IDE extension 2.0"
         }
       ]
     }

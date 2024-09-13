@@ -1,14 +1,15 @@
 import "@patternfly/patternfly/patternfly.css";
 import { createRoot } from "react-dom/client";
 import { WebviewApi, WithWebviewContext } from "./WebviewContext";
-import { ExampleViewA } from "./ExampleViewA";
-import { ExampleViewB } from "./ExampleViewB";
-import { ExampleViewC } from "./ExampleViewC";
+// import { ExampleViewA } from "./ExampleViewA";
+// import { ExampleViewB } from "./ExampleViewB";
+import { App } from "./App";
 
 export const Views = {
-  exampleViewA: ExampleViewA,
-  exampleViewB: ExampleViewB,
-  exampleViewC: ExampleViewC,
+  // exampleViewA: ExampleViewA,
+  // exampleViewB: ExampleViewB,
+  // Add additional views here as needed
+  App: App,
 } as const;
 
 export type ViewKey = keyof typeof Views;
@@ -29,7 +30,6 @@ export function render<V extends ViewKey>(
   const Component: React.ComponentType = Views[key];
 
   const root = createRoot(container);
-  console.log("vscodeApi", vscodeApi);
 
   root.render(
     <WithWebviewContext vscodeApi={vscodeApi}>

@@ -9,47 +9,76 @@ import {
   ViewApiResponse,
   ViewEvents,
 } from "./viewApi";
-import fs from "node:fs/promises";
+import { runAnalysis } from "./runAnalysis";
 
 export const activate = async (ctx: vscode.ExtensionContext) => {
   const connectedViews: Partial<Record<ViewKey, vscode.WebviewView>> = {};
 
-  const triggerEvent = <E extends keyof ViewEvents>(
-    key: E,
-    ...params: Parameters<ViewEvents[E]>
-  ) => {
-    Object.values(connectedViews).forEach((view) => {
-      view.webview.postMessage({
-        type: "event",
-        key,
-        value: params,
-      } as ViewApiEvent<E>);
-    });
-  };
+  // const triggerEvent = <E extends keyof ViewEvents>(
+  //   key: E,
+  //   ...params: Parameters<ViewEvents[E]>
+  // ) => {
+  //   Object.values(connectedViews).forEach((view) => {
+  //     view.webview.postMessage({
+  //       type: "event",
+  //       key,
+  //       value: params,
+  //     } as ViewApiEvent<E>);
+  //   });
+  // };
 
   const api: ViewApi = {
-    getFileContents: async () => {
-      const uris = await vscode.window.showOpenDialog({
-        canSelectFiles: true,
-        canSelectFolders: false,
-        canSelectMany: false,
-        openLabel: "Select file",
-        title: "Select file to read",
-      });
+    runAnalysis: async () => {
+      await runAnalysis(ctx);
+    },
+    retrieveAndCheckSettings: async () => {
+      // Access your extension's settings
+      const config = vscode.workspace.getConfiguration("kai-webview");
 
-      if (!uris?.length) {
-        return "";
+      // Retrieve the data from the workspace settings
+      const analysisData = config.get("analysisFormData");
+      console.log("Retrieved analysis data:", analysisData);
+
+      // Check if the data exists
+      if (analysisData !== undefined) {
+        console.log("Retrieved analysis data:", analysisData);
+      } else {
+        console.log("Analysis data not found.");
       }
 
-      const contents = await fs.readFile(uris[0].fsPath, "utf-8");
-      return contents;
+      // Optionally, you can return this data if needed elsewhere
+      return analysisData;
     },
-    showExampleViewB: () => {
-      connectedViews?.exampleViewB?.show?.(true);
-      vscode.commands.executeCommand(`exampleViewB.focus`);
-    },
-    sendMessageToExampleB: (msg: string) => {
-      triggerEvent("exampleBMessage", msg);
+    sendAnalysisFormData: async (data) => {
+      console.log("data", data);
+      console.log("triggerEvent or pass data to another function");
+      if (
+        !vscode.workspace.workspaceFolders ||
+        vscode.workspace.workspaceFolders.length === 0
+      ) {
+        vscode.window.showErrorMessage(
+          "No workspace is open. Please open a workspace to save settings."
+        );
+        return;
+      }
+      const config = vscode.workspace.getConfiguration("kai-webview");
+
+      await config.update(
+        "analysisFormData",
+        data,
+        vscode.ConfigurationTarget.Workspace
+      );
+      const updatedData = config.get("analysisFormData");
+      console.log("Updated analysis data:", updatedData);
+
+      if (updatedData === data) {
+        console.log("Data successfully written to the workspace.");
+      } else {
+        console.log("Data write to workspace failed or was inconsistent.");
+      }
+
+      //if we need to update other webviews with the new data
+      // triggerEvent("analysisFormData", data);
     },
   };
 
@@ -92,8 +121,12 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
   };
 
   // registerAndConnectView("exampleViewA");
-  registerAndConnectView("exampleViewC");
-
+  registerAndConnectView("App");
+  ctx.subscriptions.push(
+    vscode.commands.registerCommand("kai-webview.runAnalysis", () =>
+      runAnalysis(ctx)
+    )
+  );
   await vscode.commands.executeCommand("workbench.view.explorer");
 };
 

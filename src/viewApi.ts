@@ -1,3 +1,5 @@
+import { AnalysisFormData } from "./views/ConfigurationForm";
+
 export type ViewApiRequest<K extends keyof ViewApi = keyof ViewApi> = {
   type: "request";
   id: string;
@@ -24,14 +26,13 @@ export type ViewApiEvent<K extends keyof ViewEvents = keyof ViewEvents> = {
 };
 
 export type ViewApi = {
-  getFileContents: () => Promise<string>;
-  showExampleViewB: () => void;
-  showExampleViewC?: () => void;
-  sendMessageToExampleB: (msg: string) => void;
-  sendMessageToExampleC?: (msg: string) => void;
+  retrieveAndCheckSettings: () => Promise<unknown>;
+  runAnalysis: () => Promise<unknown>;
+  showApp?: () => void;
+  sendMessageToApp: (msg: string) => void;
+  sendAnalysisFormData: (data: AnalysisFormData) => void;
 };
 
 export type ViewEvents = {
-  exampleBMessage: (a: string) => void;
-  exampleCMessage?: (a: string) => void;
+  analysisFormData: (data: AnalysisFormData) => void;
 };
