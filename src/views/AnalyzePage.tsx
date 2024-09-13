@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Button,
   Page,
@@ -21,7 +21,41 @@ export const AnalyzePage: React.FC<AnalyzePageProps> = ({
   onConfigureClick,
 }) => {
   const { callApi } = useContext(WebviewContext);
+  const [isRunning, setIsRunning] = useState(false);
+  const [analysisMessage, setAnalysisMessage] = useState("");
 
+  useEffect(() => {
+    // Listen for messages from the extension
+    window.addEventListener("message", (event) => {
+      const message = event.data; // The message from the extension
+
+      switch (message.type) {
+        case "analysisStarted":
+          setIsRunning(true);
+          setAnalysisMessage("Analysis started...");
+          break;
+        case "analysisComplete":
+          setIsRunning(false);
+          setAnalysisMessage(`Analysis complete: ${message.message}`);
+          break;
+        case "analysisFailed":
+          setIsRunning(false);
+          setAnalysisMessage(`Analysis failed: ${message.message}`);
+          break;
+        default:
+          break;
+      }
+    });
+  }, []);
+  const handleRunAnalysis = async () => {
+    try {
+      setIsRunning(true);
+      await callApi("runAnalysis"); // Use callApi to trigger the analysis
+    } catch (error: any) {
+      setIsRunning(false);
+      setAnalysisMessage(`Analysis failed: ${error?.message as string}`);
+    }
+  };
   return (
     <Page>
       {/* Page header section (optional) */}
@@ -52,7 +86,10 @@ export const AnalyzePage: React.FC<AnalyzePageProps> = ({
 
       {/* Main content section */}
       <PageSection>
-        <Button onClick={() => callApi("runAnalysis")}>Analyze</Button>
+        {/* <Button onClick={() => callApi("runAnalysis")}>Analyze</Button> */}
+        <Button onClick={handleRunAnalysis} isDisabled={isRunning}>
+          {isRunning ? "Analyzing..." : "Analyze"}
+        </Button>
       </PageSection>
     </Page>
   );

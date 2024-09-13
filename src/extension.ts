@@ -29,7 +29,8 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
 
   const api: ViewApi = {
     runAnalysis: async () => {
-      await runAnalysis(ctx);
+      const view = connectedViews["App"];
+      await runAnalysis(ctx, view?.webview);
     },
     retrieveAndCheckSettings: async () => {
       // Access your extension's settings
@@ -124,7 +125,7 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
   registerAndConnectView("App");
   ctx.subscriptions.push(
     vscode.commands.registerCommand("kai-webview.runAnalysis", () =>
-      runAnalysis(ctx)
+      runAnalysis(ctx, connectedViews["App"]?.webview)
     )
   );
   await vscode.commands.executeCommand("workbench.view.explorer");

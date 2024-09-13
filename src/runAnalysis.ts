@@ -3,7 +3,8 @@ import * as cp from "child_process";
 import * as path from "path";
 
 export async function runAnalysis(
-  context: vscode.ExtensionContext
+  context: vscode.ExtensionContext,
+  webview?: vscode.Webview | undefined
 ): Promise<void> {
   try {
     // Step 1: Fetch the configuration from .vscode/settings.json
@@ -52,16 +53,48 @@ export async function runAnalysis(
     // Step 3: Get the path to the kantra binary using context.asAbsolutePath
     const kantraPath = context.asAbsolutePath(path.join("assets", "kantra"));
 
-    // Step 4: Execute the binary using child_process.execFile
-    cp.execFile(kantraPath, args, (error, stdout, stderr) => {
-      if (error) {
-        vscode.window.showErrorMessage(
-          `Analysis failed: ${stderr || error.message}`
-        );
-      } else {
-        vscode.window.showInformationMessage(`Analysis complete: ${stdout}`);
+    // Notify the webview that analysis is starting
+    if (webview) {
+      webview.postMessage({ type: "analysisStarted" });
+    }
+
+    // Step 4: Use vscode.window.withProgress to show a progress indicator
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Running Analysis",
+        cancellable: false,
+      },
+      async (progress) => {
+        return new Promise<void>((resolve, reject) => {
+          progress.report({ message: "Initializing..." });
+
+          // Step 5: Execute the binary using child_process.execFile
+          cp.execFile(kantraPath, args, (error, stdout, stderr) => {
+            if (error) {
+              vscode.window.showErrorMessage(
+                `Analysis failed: ${stderr || error.message}`
+              );
+              reject(error); // Reject the promise in case of error
+              if (webview) {
+                webview.postMessage({
+                  type: "analysisFailed",
+                  message: stderr || error.message,
+                });
+              }
+            } else {
+              vscode.window.showInformationMessage(
+                `Analysis complete: ${stdout}`
+              );
+              if (webview) {
+                webview.postMessage({ type: "analysisComplete" });
+              }
+              resolve(); // Resolve the promise when analysis is complete
+            }
+          });
+        });
       }
-    });
+    );
   } catch (error: any) {
     vscode.window.showErrorMessage(`Failed to run analysis: ${error.message}`);
   }
