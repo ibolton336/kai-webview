@@ -76,6 +76,11 @@
         "command": "kai-webview.runAnalysis",
         "category": "KAI IDE extension 2.0",
         "title": "Run Analysis"
+      },
+      {
+        "command": "extension.createPlaceholderDiagnostic",
+        "title": "Create Placeholder Diagnostic",
+        "category": "Diagnostics"
       }
     ],
     "views": {

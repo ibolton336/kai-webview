@@ -13,6 +13,76 @@ import { runAnalysis } from "./runAnalysis";
 
 export const activate = async (ctx: vscode.ExtensionContext) => {
   const connectedViews: Partial<Record<ViewKey, vscode.WebviewView>> = {};
+  // --------------------------------------------
+  const diagnosticCollection =
+    vscode.languages.createDiagnosticCollection("analysis");
+
+  // Set a command to trigger the creation of the placeholder diagnostic
+  ctx.subscriptions.push(
+    vscode.commands.registerCommand(
+      "extension.createPlaceholderDiagnostic",
+      () => {
+        const activeEditor = vscode.window.activeTextEditor;
+
+        if (activeEditor) {
+          const doc = activeEditor.document;
+
+          // Create a simple diagnostic for the first line
+          const range = new vscode.Range(
+            new vscode.Position(0, 0),
+            new vscode.Position(0, 10)
+          );
+          const diagnostic = new vscode.Diagnostic(
+            range,
+            "Placeholder problem for analysis.",
+            vscode.DiagnosticSeverity.Warning
+          );
+
+          diagnostic.source = "AnalysisEngine";
+
+          // Add diagnostics to the file
+          diagnosticCollection.set(doc.uri, [diagnostic]);
+
+          // Show a message that diagnostics have been added
+          vscode.window.showInformationMessage(
+            `Placeholder diagnostic created for ${doc.uri.fsPath} in the Problems pane.`
+          );
+        } else {
+          vscode.window.showErrorMessage("No active editor found.");
+        }
+      }
+    )
+  );
+
+  // Clear diagnostics when the extension is deactivated
+  ctx.subscriptions.push(diagnosticCollection);
+
+  // Listen for the active text editor change to simulate the click
+  ctx.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        const document = editor.document;
+        const diagnostics = vscode.languages.getDiagnostics(document.uri);
+
+        if (diagnostics.length > 0) {
+          vscode.window.showInformationMessage(
+            `Diagnostics found: ${diagnostics[0].message}`
+          );
+
+          // Simulate sending data to the webview (if needed)
+          const view = connectedViews["App"];
+          if (view) {
+            view.webview.postMessage({
+              type: "showIncidentDetails",
+              message: diagnostics[0].message,
+            });
+          }
+        }
+      }
+    })
+  );
+
+  // -------------------------------------------
 
   // const triggerEvent = <E extends keyof ViewEvents>(
   //   key: E,
