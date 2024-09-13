@@ -15,7 +15,7 @@ export async function runAnalysis(
     }
 
     // Step 2: Build the arguments for the kantra binary
-    const args: string[] = ["analyze"];
+    const args: string[] = ["analyze", "--provider=java"];
 
     const workspaceFolders = vscode.workspace.workspaceFolders;
 
