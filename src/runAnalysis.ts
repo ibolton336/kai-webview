@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
 import * as path from "path";
+import * as fs from "fs";
+import * as yaml from "js-yaml";
 
 export async function runAnalysis(
   context: vscode.ExtensionContext,
@@ -25,12 +27,16 @@ export async function runAnalysis(
       args.push("--input", workspaceFolders[0].uri.fsPath);
     }
 
-    if (analysisFormData.targets) {
-      args.push("--target", analysisFormData.targets.join(","));
+    if (analysisFormData.sources) {
+      analysisFormData.sources.forEach((source: any) => {
+        args.push("--source", source);
+      });
     }
 
-    if (analysisFormData.sources) {
-      args.push("--source", analysisFormData.sources.join(","));
+    if (analysisFormData.targets) {
+      analysisFormData.targets.forEach((target: any) => {
+        args.push("--target", target);
+      });
     }
 
     if (analysisFormData.sourceOnly) {
@@ -67,29 +73,105 @@ export async function runAnalysis(
       },
       async (progress) => {
         return new Promise<void>((resolve, reject) => {
+          const outputChannel: vscode.OutputChannel =
+            vscode.window.createOutputChannel("kai-webview");
+          outputChannel.clear();
+          outputChannel.appendLine("Preparing to run analysis...");
+          outputChannel.show();
+
           progress.report({ message: "Initializing..." });
 
-          // Step 5: Execute the binary using child_process.execFile
-          cp.execFile(kantraPath, args, (error, stdout, stderr) => {
-            if (error) {
-              vscode.window.showErrorMessage(
-                `Analysis failed: ${stderr || error.message}`
-              );
-              reject(error); // Reject the promise in case of error
+          const analysis = cp.spawn(kantraPath, args);
+
+          let stderrData = ""; // Accumulate stderr data
+          analysis.stdout.on("data", (data) => {
+            outputChannel.append(data.toString());
+          });
+          analysis.stderr.on("data", (data) => {
+            stderrData += data.toString();
+          });
+
+          analysis.on("close", (code) => {
+            if (code !== 0) {
+              vscode.window.showErrorMessage(`Analysis failed: ${stderrData}`);
               if (webview) {
                 webview.postMessage({
                   type: "analysisFailed",
-                  message: stderr || error.message,
+                  message: stderrData,
                 });
               }
-            } else {
-              vscode.window.showInformationMessage(
-                `Analysis complete: ${stdout}`
+              return reject(
+                new Error(`Analysis failed with code ${code}: ${stderrData}`)
               );
-              if (webview) {
-                webview.postMessage({ type: "analysisComplete" });
+            }
+
+            // Analysis completed successfully
+            vscode.window.showInformationMessage("Analysis complete!");
+            if (webview) {
+              webview.postMessage({ type: "analysisComplete" });
+            }
+            outputChannel.appendLine("Analysis completed successfully.");
+
+            try {
+              // Process the analysis results
+              const yamlContent = fs.readFileSync(
+                path.join(outputPath, "output.yaml"),
+                "utf8"
+              );
+              const analysisResults = yaml.load(yamlContent);
+              context.workspaceState.update("analysisResults", analysisResults);
+
+              if (!Array.isArray(analysisResults)) {
+                throw new Error("Expected an array of RuleSets in the output.");
               }
-              resolve(); // Resolve the promise when analysis is complete
+              outputChannel.appendLine("Processing analysis output.yaml");
+
+              const diagnosticCollection =
+                vscode.languages.createDiagnosticCollection("kai-webview");
+
+              analysisResults.forEach((ruleset: any) => {
+                Object.keys(ruleset.violations ?? {}).forEach((ruleId) => {
+                  const category = ruleset.violations[ruleId].category;
+                  ruleset.violations[ruleId].incidents?.forEach(
+                    (incident: any) => {
+                      const fileName = vscode.Uri.file(
+                        incident.uri.replace(
+                          "file:///opt/input/source",
+                          vscode.workspace.workspaceFolders?.[0].uri.fsPath
+                        )
+                      );
+                      const lineNumber = incident.lineNumber
+                        ? incident.lineNumber - 1
+                        : 0;
+                      const severity = (category: string) => {
+                        if (category === "mandatory") {
+                          return vscode.DiagnosticSeverity.Error;
+                        }
+                        if (category === "potential") {
+                          return vscode.DiagnosticSeverity.Warning;
+                        }
+                        if (category === "optional") {
+                          return vscode.DiagnosticSeverity.Information;
+                        }
+                      };
+                      diagnosticCollection.set(fileName, [
+                        new vscode.Diagnostic(
+                          new vscode.Range(lineNumber, 0, lineNumber, 100),
+                          incident.message,
+                          severity(category)
+                        ),
+                      ]);
+                    }
+                  );
+                });
+              });
+              vscode.window.showInformationMessage("Diagnostics created.");
+              resolve();
+            } catch (error: any) {
+              vscode.window.showErrorMessage(
+                `Error processing analysis results: ${error.message}`
+              );
+              reject(error);
             }
           });
         });
