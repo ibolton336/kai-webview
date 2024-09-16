@@ -105,14 +105,5 @@
         }
       ]
     }
-<<<<<<< HEAD
-  },
-  "dependencies": {
-    "@patternfly/patternfly": "^5.4.0",
-    "@patternfly/react-core": "^5.4.0",
-    "js-yaml": "^4.1.0",
-    "react-hook-form": "^7.53.0"
-=======
->>>>>>> 36cf8bf (fix build)
   }
 }
