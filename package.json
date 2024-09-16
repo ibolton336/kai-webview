@@ -81,6 +81,10 @@
         "command": "extension.createPlaceholderDiagnostic",
         "title": "Create Placeholder Diagnostic",
         "category": "Diagnostics"
+      },
+      {
+        "command": "extension.reloadWebviewAndOpenDevTools",
+        "title": "Reload Webview and Open DevTools"
       }
     ],
     "views": {
@@ -88,7 +92,7 @@
         {
           "id": "App",
           "type": "webview",
-          "name": "KAI IDE extension 2.0 - View C",
+          "name": "KAI IDE extension 2.0",
           "category": "KAI IDE extension 2.0"
         }
       ]
