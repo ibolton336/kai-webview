@@ -12,7 +12,6 @@ import {
 import { runAnalysis } from "./runAnalysis";
 
 export const activate = async (ctx: vscode.ExtensionContext) => {
-  console.log("Congratulations, your extension 'kai-webview' is now active!");
   const connectedViews: Partial<Record<ViewKey, vscode.WebviewView>> = {};
   // --------------------------------------------
   const diagnosticCollection =
@@ -215,7 +214,7 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
 
           // Open the webview developer tools
           await vscode.commands.executeCommand(
-            "workbench.action.webview.openDeveloperTools"
+            "workbench.action.toggleDevTools"
           );
         } else {
           vscode.window.showErrorMessage("Webview is not available");

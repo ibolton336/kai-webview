@@ -32,34 +32,40 @@ const template = (params: {
 </html>
 `;
 
-const createView = async <V extends ViewKey>(
+const createView = (
   ctx: vscode.ExtensionContext,
-  viewId: V,
+  viewId: ViewKey,
   options?: vscode.WebviewOptions
-): Promise<void> => {
-  const provider: vscode.WebviewViewProvider = {
-    resolveWebviewView: (view, _viewCtx, _token) => {
-      try {
-        // Set the webview options
-        view.webview.options = { ...options };
+): Promise<vscode.WebviewView> => {
+  return new Promise((resolve, reject) => {
+    const provider: vscode.WebviewViewProvider = {
+      resolveWebviewView: (view, _viewCtx, _token) => {
+        try {
+          // Set the webview options
+          view.webview.options = { ...options };
 
-        // Set the HTML content for the webview
-        setViewHtml(ctx, viewId, view.webview);
+          // Set the HTML content for the webview
+          setViewHtml(ctx, viewId, view.webview);
 
-        // Clean up when the webview is disposed
-        view.onDidDispose(() => {
-          // Perform any necessary cleanup
-        });
-      } catch (err) {
-        console.error("Error resolving webview view:", err);
-      }
-    },
-  };
+          // Clean up when the webview is disposed
+          view.onDidDispose(() => {
+            // Perform any necessary cleanup
+          });
 
-  // Register the WebviewViewProvider
-  ctx.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(viewId, provider)
-  );
+          // **Resolve the promise with the view**
+          resolve(view);
+        } catch (err) {
+          console.error("Error resolving webview view:", err);
+          reject(err);
+        }
+      },
+    };
+
+    // Register the WebviewViewProvider
+    ctx.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(viewId, provider)
+    );
+  });
 };
 
 const setViewHtml = <V extends ViewKey>(
@@ -110,9 +116,9 @@ const setViewHtml = <V extends ViewKey>(
   return webview;
 };
 
-export const registerView = async <V extends ViewKey>(
+export const registerView = (
   ctx: vscode.ExtensionContext,
-  viewId: V
-) => {
-  return await createView(ctx, viewId, { enableScripts: true });
+  viewId: ViewKey
+): Promise<vscode.WebviewView> => {
+  return createView(ctx, viewId, { enableScripts: true });
 };
