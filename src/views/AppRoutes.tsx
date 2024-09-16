@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { ConfigurationForm } from "./ConfigurationForm";
 import { WebviewContext } from "./WebviewContext";
 import { AnalyzePage } from "./AnalyzePage";
+import { IncidentDetails } from "./IncidentDetails";
 
 export const AppRoutes: React.FC = () => {
   const { callApi } = useContext(WebviewContext);
@@ -28,8 +29,12 @@ export const AppRoutes: React.FC = () => {
   return (
     <div>
       {currentPage === "analyze" && (
-        <AnalyzePage onConfigureClick={() => navigateTo("configure")} />
+        <>
+          <AnalyzePage onConfigureClick={() => navigateTo("configure")} />
+          {true ? <IncidentDetails /> : <p>No incidents available.</p>}
+        </>
       )}
+
       {currentPage === "configure" && (
         <ConfigurationForm onCancel={() => navigateTo("analyze")} />
       )}

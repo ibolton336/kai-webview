@@ -36,29 +36,30 @@ const createView = async <V extends ViewKey>(
   ctx: vscode.ExtensionContext,
   viewId: V,
   options?: vscode.WebviewOptions
-): Promise<vscode.WebviewView> => {
-  return await new Promise((resolve, reject) => {
-    let dispose: vscode.Disposable;
-    try {
-      const provider: vscode.WebviewViewProvider = {
-        resolveWebviewView: (view, _viewCtx, _token) => {
-          try {
-            view.onDidDispose(() => {
-              dispose.dispose();
-            });
-            view.webview.options = { ...options };
-            resolve(view);
-          } catch (err: unknown) {
-            reject(err);
-          }
-        },
-      };
-      dispose = vscode.window.registerWebviewViewProvider(viewId, provider);
-      ctx.subscriptions.push(dispose);
-    } catch (err: unknown) {
-      reject(err);
-    }
-  });
+): Promise<void> => {
+  const provider: vscode.WebviewViewProvider = {
+    resolveWebviewView: (view, _viewCtx, _token) => {
+      try {
+        // Set the webview options
+        view.webview.options = { ...options };
+
+        // Set the HTML content for the webview
+        setViewHtml(ctx, viewId, view.webview);
+
+        // Clean up when the webview is disposed
+        view.onDidDispose(() => {
+          // Perform any necessary cleanup
+        });
+      } catch (err) {
+        console.error("Error resolving webview view:", err);
+      }
+    },
+  };
+
+  // Register the WebviewViewProvider
+  ctx.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(viewId, provider)
+  );
 };
 
 const setViewHtml = <V extends ViewKey>(
@@ -82,15 +83,18 @@ const setViewHtml = <V extends ViewKey>(
       ? [
           `form-action 'none';`,
           `default-src ${webview.cspSource};`,
-          `script-src ${webview.cspSource} 'nonce-${nonce}';`,
-          `style-src ${webview.cspSource} ${DEV_SERVER_HOST} 'unsafe-inline';`,
+          `script-src 'nonce-${nonce}' ${webview.cspSource};`,
+          `style-src 'unsafe-inline' ${webview.cspSource};`,
+          `img-src ${webview.cspSource} data:;`,
+          `connect-src ${webview.cspSource};`,
         ]
       : [
           `form-action 'none';`,
           `default-src ${webview.cspSource} ${DEV_SERVER_HOST};`,
-          `style-src ${webview.cspSource} ${DEV_SERVER_HOST} 'unsafe-inline';`,
-          `script-src ${webview.cspSource} ${DEV_SERVER_HOST} 'nonce-${nonce}';`,
-          `connect-src 'self' ${webview.cspSource} ${DEV_SERVER_HOST} ws:;`,
+          `style-src 'unsafe-inline' ${webview.cspSource} ${DEV_SERVER_HOST};`,
+          `script-src 'nonce-${nonce}' ${webview.cspSource} ${DEV_SERVER_HOST};`,
+          `img-src ${webview.cspSource} ${DEV_SERVER_HOST} data:;`,
+          `connect-src ${webview.cspSource} ${DEV_SERVER_HOST} ws:;`,
         ]
   ).join(" ");
 
@@ -102,6 +106,7 @@ const setViewHtml = <V extends ViewKey>(
     view: viewId,
     nonce,
   });
+
   return webview;
 };
 
@@ -109,7 +114,5 @@ export const registerView = async <V extends ViewKey>(
   ctx: vscode.ExtensionContext,
   viewId: V
 ) => {
-  const view = await createView(ctx, viewId, { enableScripts: true });
-  setViewHtml(ctx, viewId, view.webview);
-  return view;
+  await createView(ctx, viewId, { enableScripts: true });
 };
