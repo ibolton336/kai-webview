@@ -4,15 +4,13 @@
   "displayName": "Webview Extension for Kai",
   "description": "",
   "version": "1.2.2",
-  "engines": {
-    "vscode": "^1.83.1",
-    "node": "~18.17.0",
-    "npm": "^9.6.7"
-  },
   "tags": [],
   "categories": [],
   "publisher": "example",
   "main": "extension.js",
+  "engines": {
+    "vscode": "^1.83.1"
+  },
   "scripts": {
     "bundle": "webpack --mode production && webpack --mode production --config ./webpack.config.views.js",
     "build": "rm -rf dist && mkdir -p build && npm run bundle && node scripts/build.js",
@@ -20,7 +18,15 @@
     "devserver": "webpack serve --mode development --config ./webpack.config.views.js",
     "format": "prettier 'src/**/*.js' 'src/**/*.jsx' 'src/**/*.ts' 'src/**/*.tsx' './package.json' '.swcrc' './*.js' --no-error-on-unmatched-pattern --write"
   },
+  "dependencies": {
+    "@patternfly/patternfly": "^5.4.0",
+    "@patternfly/react-core": "^5.4.0",
+    "react-hook-form": "^7.53.0"
+  },
   "devDependencies": {
+    "@patternfly/patternfly": "^5.4.0",
+    "@patternfly/react-core": "^5.4.0",
+    "react-hook-form": "^7.53.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.11",
     "@swc/cli": "^0.1.62",
     "@swc/core": "^1.3.93",
@@ -97,11 +103,14 @@
         }
       ]
     }
+<<<<<<< HEAD
   },
   "dependencies": {
     "@patternfly/patternfly": "^5.4.0",
     "@patternfly/react-core": "^5.4.0",
     "js-yaml": "^4.1.0",
     "react-hook-form": "^7.53.0"
+=======
+>>>>>>> 36cf8bf (fix build)
   }
 }

@@ -114,5 +114,5 @@ export const registerView = async <V extends ViewKey>(
   ctx: vscode.ExtensionContext,
   viewId: V
 ) => {
-  await createView(ctx, viewId, { enableScripts: true });
+  return await createView(ctx, viewId, { enableScripts: true });
 };

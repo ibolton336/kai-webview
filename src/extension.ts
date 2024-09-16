@@ -12,6 +12,7 @@ import {
 import { runAnalysis } from "./runAnalysis";
 
 export const activate = async (ctx: vscode.ExtensionContext) => {
+  console.log("Congratulations, your extension 'kai-webview' is now active!");
   const connectedViews: Partial<Record<ViewKey, vscode.WebviewView>> = {};
   // --------------------------------------------
   const diagnosticCollection =
