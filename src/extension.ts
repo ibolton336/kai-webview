@@ -191,7 +191,6 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
     view.webview.onDidReceiveMessage(onMessage);
   };
 
-  // registerAndConnectView("exampleViewA");
   registerAndConnectView("App");
   ctx.subscriptions.push(
     vscode.commands.registerCommand("kai-webview.runAnalysis", () =>
@@ -199,6 +198,30 @@ export const activate = async (ctx: vscode.ExtensionContext) => {
     )
   );
   await vscode.commands.executeCommand("workbench.view.explorer");
+
+  // Register the command
+  ctx.subscriptions.push(
+    vscode.commands.registerCommand(
+      "extension.reloadWebviewAndOpenDevTools",
+      async () => {
+        const view = connectedViews["App"];
+        if (view) {
+          // Reload the webview content
+          registerAndConnectView("App");
+
+          // Bring focus to the webview
+          view.show?.(true);
+
+          // Open the webview developer tools
+          await vscode.commands.executeCommand(
+            "workbench.action.toggleDevTools"
+          );
+        } else {
+          vscode.window.showErrorMessage("Webview is not available");
+        }
+      }
+    )
+  );
 };
 
 export const deactivate = () => {
