@@ -97,6 +97,8 @@ export async function runAnalysis(
           const analysis = cp.spawn(kantraPath, args);
 
           // Set a timeout to prevent hanging indefinitely
+
+          // TODO: Make this configurable / cancelable
           const analysisTimeout = setTimeout(() => {
             analysis.kill();
             vscode.window.showErrorMessage("Analysis process timed out.");
@@ -110,15 +112,6 @@ export async function runAnalysis(
           });
           analysis.stderr.on("data", (data) => {
             stderrData += data.toString();
-          });
-
-          analysis.on("error", (err) => {
-            clearTimeout(analysisTimeout);
-            vscode.window.showErrorMessage(
-              `Failed to start analysis process: ${err.message}`
-            );
-            outputChannel.appendLine(`Error: ${err.message}`);
-            reject(err);
           });
 
           analysis.on("close", (code) => {
