@@ -184,6 +184,12 @@ export async function runAnalysis(
               });
               vscode.window.showInformationMessage("Diagnostics created.");
               resolve();
+              if (webview) {
+                webview.postMessage({
+                  type: "analysisComplete",
+                  message: "Analysis complete!",
+                });
+              }
             } catch (error: any) {
               vscode.window.showErrorMessage(
                 `Error processing analysis results: ${error.message}`
