@@ -14,6 +14,12 @@ export async function runAnalysis(
     const analysisFormData = config.get<any>("analysisFormData");
 
     if (!analysisFormData) {
+      if (webview) {
+        webview.postMessage({
+          type: "analysisFailed",
+          message: "Kantra binary not found.",
+        });
+      }
       throw new Error("No analysis form data found in .vscode/settings.json");
     }
 
@@ -50,6 +56,12 @@ export async function runAnalysis(
     // Use fsPath to get the correct path as a string
     const outputPath = context.storageUri?.fsPath;
     if (!outputPath) {
+      if (webview) {
+        webview.postMessage({
+          type: "analysisFailed",
+          message: "Kantra binary not found.",
+        });
+      }
       throw new Error("Unable to resolve storage path");
     }
 
@@ -60,11 +72,23 @@ export async function runAnalysis(
     const kantraPath = context.asAbsolutePath(path.join("assets", "kantra"));
 
     if (!fs.existsSync(kantraPath)) {
+      if (webview) {
+        webview.postMessage({
+          type: "analysisFailed",
+          message: "Kantra binary not found.",
+        });
+      }
       throw new Error(`Kantra binary not found at path: ${kantraPath}`);
     }
     try {
       fs.accessSync(kantraPath, fs.constants.X_OK);
     } catch (err) {
+      if (webview) {
+        webview.postMessage({
+          type: "analysisFailed",
+          message: "Kantra binary not found.",
+        });
+      }
       throw new Error(`Kantra binary is not executable: ${kantraPath}`);
     }
 
@@ -168,6 +192,12 @@ export async function runAnalysis(
               context.workspaceState.update("analysisResults", analysisResults);
 
               if (!Array.isArray(analysisResults)) {
+                if (webview) {
+                  webview.postMessage({
+                    type: "analysisFailed",
+                    message: "Kantra binary not found.",
+                  });
+                }
                 throw new Error("Expected an array of RuleSets in the output.");
               }
               outputChannel.appendLine("Processing analysis output.yaml");
@@ -218,6 +248,12 @@ export async function runAnalysis(
                 `Error processing analysis results: ${error.message}`
               );
               outputChannel.appendLine(`Error: ${error.message}`);
+              if (webview) {
+                webview.postMessage({
+                  type: "analysisFailed",
+                  message: "Kantra binary not found.",
+                });
+              }
               reject(error);
             }
           });
@@ -225,6 +261,12 @@ export async function runAnalysis(
       }
     );
   } catch (error: any) {
+    if (webview) {
+      webview.postMessage({
+        type: "analysisFailed",
+        message: "Kantra binary not found.",
+      });
+    }
     vscode.window.showErrorMessage(`Failed to run analysis: ${error.message}`);
   }
 }
