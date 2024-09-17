@@ -6,7 +6,7 @@ import * as yaml from "js-yaml";
 
 export async function runAnalysis(
   context: vscode.ExtensionContext,
-  webview?: vscode.Webview | undefined
+  webview?: vscode.Webview
 ): Promise<void> {
   try {
     // Step 1: Fetch the configuration from .vscode/settings.json
@@ -59,6 +59,15 @@ export async function runAnalysis(
     // Step 3: Get the path to the kantra binary using context.asAbsolutePath
     const kantraPath = context.asAbsolutePath(path.join("assets", "kantra"));
 
+    if (!fs.existsSync(kantraPath)) {
+      throw new Error(`Kantra binary not found at path: ${kantraPath}`);
+    }
+    try {
+      fs.accessSync(kantraPath, fs.constants.X_OK);
+    } catch (err) {
+      throw new Error(`Kantra binary is not executable: ${kantraPath}`);
+    }
+
     // Notify the webview that analysis is starting
     if (webview) {
       webview.postMessage({ type: "analysisStarted" });
@@ -81,7 +90,21 @@ export async function runAnalysis(
 
           progress.report({ message: "Initializing..." });
 
+          outputChannel.appendLine(
+            `Running command: ${kantraPath} ${args.join(" ")}`
+          );
+
           const analysis = cp.spawn(kantraPath, args);
+
+          // Set a timeout to prevent hanging indefinitely
+
+          // TODO: Make this configurable / cancelable
+          const analysisTimeout = setTimeout(() => {
+            analysis.kill();
+            vscode.window.showErrorMessage("Analysis process timed out.");
+            outputChannel.appendLine("Analysis process timed out.");
+            reject(new Error("Analysis process timed out."));
+          }, 300000); // Timeout after 5 minutes
 
           let stderrData = ""; // Accumulate stderr data
           analysis.stdout.on("data", (data) => {
@@ -92,14 +115,10 @@ export async function runAnalysis(
           });
 
           analysis.on("close", (code) => {
+            clearTimeout(analysisTimeout);
+
             if (code !== 0) {
               vscode.window.showErrorMessage(`Analysis failed: ${stderrData}`);
-              if (webview) {
-                webview.postMessage({
-                  type: "analysisFailed",
-                  message: stderrData,
-                });
-              }
               return reject(
                 new Error(`Analysis failed with code ${code}: ${stderrData}`)
               );
@@ -107,9 +126,6 @@ export async function runAnalysis(
 
             // Analysis completed successfully
             vscode.window.showInformationMessage("Analysis complete!");
-            if (webview) {
-              webview.postMessage({ type: "analysisComplete" });
-            }
             outputChannel.appendLine("Analysis completed successfully.");
 
             try {
@@ -153,6 +169,7 @@ export async function runAnalysis(
                         if (category === "optional") {
                           return vscode.DiagnosticSeverity.Information;
                         }
+                        return vscode.DiagnosticSeverity.Hint;
                       };
                       diagnosticCollection.set(fileName, [
                         new vscode.Diagnostic(
@@ -167,10 +184,17 @@ export async function runAnalysis(
               });
               vscode.window.showInformationMessage("Diagnostics created.");
               resolve();
+              if (webview) {
+                webview.postMessage({
+                  type: "analysisComplete",
+                  message: "Analysis complete!",
+                });
+              }
             } catch (error: any) {
               vscode.window.showErrorMessage(
                 `Error processing analysis results: ${error.message}`
               );
+              outputChannel.appendLine(`Error: ${error.message}`);
               reject(error);
             }
           });
@@ -178,6 +202,12 @@ export async function runAnalysis(
       }
     );
   } catch (error: any) {
+    if (webview) {
+      webview.postMessage({
+        type: "analysisFailed",
+        message: error.message,
+      });
+    }
     vscode.window.showErrorMessage(`Failed to run analysis: ${error.message}`);
   }
 }

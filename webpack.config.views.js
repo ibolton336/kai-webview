@@ -3,6 +3,8 @@
 const path = require("path");
 const webpack = require("webpack");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin"); // Import the plugin
+const WebpackShellPluginNext = require("webpack-shell-plugin-next");
 
 module.exports = (env, { mode }) => {
   const isDev = mode === "development";
@@ -89,6 +91,23 @@ module.exports = (env, { mode }) => {
         React: "react",
       }),
       isDev && new ReactRefreshWebpackPlugin(),
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.resolve(__dirname, "assets", "kantra"), // Source path
+            to: path.resolve(__dirname, "dist", "assets"), // Destination path
+            noErrorOnMissing: true, // Optional: Avoid errors if the file is missing
+            force: true, // Overwrite existing files
+          },
+        ],
+      }),
+      new WebpackShellPluginNext({
+        onBuildEnd: {
+          scripts: ["chmod +x dist/assets/kantra"],
+          blocking: true, // Ensure the command finishes before proceeding
+          parallel: false,
+        },
+      }),
     ].filter(Boolean),
     devtool: isDev ? "inline-cheap-module-source-map" : false,
     infrastructureLogging: {
