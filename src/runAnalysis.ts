@@ -6,7 +6,7 @@ import * as yaml from "js-yaml";
 
 export async function runAnalysis(
   context: vscode.ExtensionContext,
-  webview?: vscode.Webview | undefined
+  webview?: vscode.Webview
 ): Promise<void> {
   try {
     // Step 1: Fetch the configuration from .vscode/settings.json
@@ -14,12 +14,6 @@ export async function runAnalysis(
     const analysisFormData = config.get<any>("analysisFormData");
 
     if (!analysisFormData) {
-      if (webview) {
-        webview.postMessage({
-          type: "analysisFailed",
-          message: "Kantra binary not found.",
-        });
-      }
       throw new Error("No analysis form data found in .vscode/settings.json");
     }
 
@@ -56,12 +50,6 @@ export async function runAnalysis(
     // Use fsPath to get the correct path as a string
     const outputPath = context.storageUri?.fsPath;
     if (!outputPath) {
-      if (webview) {
-        webview.postMessage({
-          type: "analysisFailed",
-          message: "Kantra binary not found.",
-        });
-      }
       throw new Error("Unable to resolve storage path");
     }
 
@@ -72,23 +60,11 @@ export async function runAnalysis(
     const kantraPath = context.asAbsolutePath(path.join("assets", "kantra"));
 
     if (!fs.existsSync(kantraPath)) {
-      if (webview) {
-        webview.postMessage({
-          type: "analysisFailed",
-          message: "Kantra binary not found.",
-        });
-      }
       throw new Error(`Kantra binary not found at path: ${kantraPath}`);
     }
     try {
       fs.accessSync(kantraPath, fs.constants.X_OK);
     } catch (err) {
-      if (webview) {
-        webview.postMessage({
-          type: "analysisFailed",
-          message: "Kantra binary not found.",
-        });
-      }
       throw new Error(`Kantra binary is not executable: ${kantraPath}`);
     }
 
@@ -124,12 +100,6 @@ export async function runAnalysis(
           const analysisTimeout = setTimeout(() => {
             analysis.kill();
             vscode.window.showErrorMessage("Analysis process timed out.");
-            if (webview) {
-              webview.postMessage({
-                type: "analysisFailed",
-                message: "Analysis process timed out.",
-              });
-            }
             outputChannel.appendLine("Analysis process timed out.");
             reject(new Error("Analysis process timed out."));
           }, 300000); // Timeout after 5 minutes
@@ -144,17 +114,9 @@ export async function runAnalysis(
 
           analysis.on("error", (err) => {
             clearTimeout(analysisTimeout);
-
             vscode.window.showErrorMessage(
               `Failed to start analysis process: ${err.message}`
             );
-
-            if (webview) {
-              webview.postMessage({
-                type: "analysisFailed",
-                message: err.message,
-              });
-            }
             outputChannel.appendLine(`Error: ${err.message}`);
             reject(err);
           });
@@ -164,12 +126,6 @@ export async function runAnalysis(
 
             if (code !== 0) {
               vscode.window.showErrorMessage(`Analysis failed: ${stderrData}`);
-              if (webview) {
-                webview.postMessage({
-                  type: "analysisFailed",
-                  message: stderrData,
-                });
-              }
               return reject(
                 new Error(`Analysis failed with code ${code}: ${stderrData}`)
               );
@@ -177,9 +133,6 @@ export async function runAnalysis(
 
             // Analysis completed successfully
             vscode.window.showInformationMessage("Analysis complete!");
-            if (webview) {
-              webview.postMessage({ type: "analysisComplete" });
-            }
             outputChannel.appendLine("Analysis completed successfully.");
 
             try {
@@ -192,12 +145,6 @@ export async function runAnalysis(
               context.workspaceState.update("analysisResults", analysisResults);
 
               if (!Array.isArray(analysisResults)) {
-                if (webview) {
-                  webview.postMessage({
-                    type: "analysisFailed",
-                    message: "Kantra binary not found.",
-                  });
-                }
                 throw new Error("Expected an array of RuleSets in the output.");
               }
               outputChannel.appendLine("Processing analysis output.yaml");
@@ -229,6 +176,7 @@ export async function runAnalysis(
                         if (category === "optional") {
                           return vscode.DiagnosticSeverity.Information;
                         }
+                        return vscode.DiagnosticSeverity.Hint;
                       };
                       diagnosticCollection.set(fileName, [
                         new vscode.Diagnostic(
@@ -248,12 +196,6 @@ export async function runAnalysis(
                 `Error processing analysis results: ${error.message}`
               );
               outputChannel.appendLine(`Error: ${error.message}`);
-              if (webview) {
-                webview.postMessage({
-                  type: "analysisFailed",
-                  message: "Kantra binary not found.",
-                });
-              }
               reject(error);
             }
           });
@@ -264,7 +206,7 @@ export async function runAnalysis(
     if (webview) {
       webview.postMessage({
         type: "analysisFailed",
-        message: "Kantra binary not found.",
+        message: error.message,
       });
     }
     vscode.window.showErrorMessage(`Failed to run analysis: ${error.message}`);
